@@ -95,8 +95,8 @@ namespace BusPiratePICProgrammer
 
 		}
 
-		
-		public override void writeCode(int address, byte[] data, int offset, int length)
+
+		public override void writeCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			int blocksize = length;
 			//if((address%96)==0)
@@ -184,7 +184,7 @@ namespace BusPiratePICProgrammer
 			//}
 		}
 
-		public override void writeData(int address, byte[] data, int offset, int length)
+		public override void writeData(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			int blocksize = length;
 
@@ -246,7 +246,7 @@ namespace BusPiratePICProgrammer
 			dspic_send_24_bits(0x000000);	//NOP
 		}
 
-		public override void writeConfig(int address, byte[] data, int offset, int length)
+		public override void writeConfig(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			int blocksize = length;
 			int payload;
@@ -302,7 +302,7 @@ namespace BusPiratePICProgrammer
 
 		}
 
-		public override void readData(int address, byte[] data, int offset, int length)
+		public override void readData(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			int blocksize = length;
 			int payload;
@@ -343,8 +343,8 @@ namespace BusPiratePICProgrammer
 			}
 		}
 
-		
-		public override void readCode(int address, byte[] data, int offset, int length)
+
+		public override void readCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			int blocksize = length / 2;
 

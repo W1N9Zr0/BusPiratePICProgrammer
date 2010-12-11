@@ -87,7 +87,7 @@ namespace BusPiratePICProgrammer
 			Program = false;
 		}
 
-		public override void writeCode(int address, byte[] data, int offset, int length)
+		public override void writeCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			Program = true;
 
@@ -95,9 +95,10 @@ namespace BusPiratePICProgrammer
 			
 			for (int i = 0; i < length; i+=2 * loadsPerWrite)
 			{
+				int word = -1;
 				
 				for (int j = 0; j < loadsPerWrite; j++) {
-					int word = data[offset + i + j] 
+					word = data[offset + i + j] 
 					        | (data[offset + i + j + 1] << 8);
 				
 					loadCodeWord(word);
@@ -105,18 +106,21 @@ namespace BusPiratePICProgrammer
 
 				writeLoadedCode();
 
-				//int read = readCodeWord();
+				//int read = readProgramWord();
 				//if (word != read)
 				//{
-				//    // retry? fail?
+				//    throw new Exception("asdf!");
 				//}
 				IncAddress();
+
+				if (pr != null)
+					pr(i * 100 / length);
 			}
 
 			Program = false;
 		}
 
-		public override void writeData(int address, byte[] data, int offset, int length)
+		public override void writeData(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			Program = true;
 
@@ -126,12 +130,15 @@ namespace BusPiratePICProgrammer
 			{
 				writeDataWord(data[i]);
 				IncAddress();
+
+				if (pr != null)
+					pr(i * 100 / length);
 			}
 
 			Program = false;
 		}
 
-		public override void writeConfig(int address, byte[] data, int offset, int length)
+		public override void writeConfig(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			Program = true;
 
@@ -153,12 +160,15 @@ namespace BusPiratePICProgrammer
 				loadCodeWord(word);
 				writeLoadedCode();
 				IncAddress();
+
+				if (pr != null)
+					pr(i * 100 / length);
 			}
 
 			Program = false;
 		}
 
-		public override void readData(int address, byte[] data, int offset, int length)
+		public override void readData(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			Program = true;
 
@@ -168,12 +178,15 @@ namespace BusPiratePICProgrammer
 			{
 				data[offset + i] = readDataByte();
 				IncAddress();
+
+				if (pr != null)
+					pr(i * 100 / length);
 			}
 
 			Program = false;
 		}
 
-		public override void readCode(int address, byte[] data, int offset, int length)
+		public override void readCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null)
 		{
 			Program = true;
 
@@ -194,6 +207,8 @@ namespace BusPiratePICProgrammer
 				data[offset + i + 1] = (byte) ((word >> 8) & 0xff);
 				
 				IncAddress();
+				if (pr != null)
+					pr(i * 100 / length);
 			}
 
 			Program = false;

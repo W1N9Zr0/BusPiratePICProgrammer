@@ -36,7 +36,7 @@ namespace BusPiratePICProgrammer
 		{
 			set
 			{
-				//hw.Power = false;
+				hw.Power = false;
 				hw.CS = false;
 				BusPirate.Wait(50);
 				
@@ -46,7 +46,7 @@ namespace BusPiratePICProgrammer
 					hw.AUX = value;
 
 				BusPirate.Wait(50);
-				//hw.Power = true;
+				hw.Power = true;
 				hw.CS = true;
 
 				program = value;
@@ -66,16 +66,18 @@ namespace BusPiratePICProgrammer
 		public abstract void bulkErase(bool eraseEEPROM = true);
 
 		public abstract void eraseData();
-		
-		public abstract void writeCode(int address, byte[] data, int offset, int length);
 
-		public abstract void writeData(int address, byte[] data, int offset, int length);
+		public abstract void writeCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null);
 
-		public abstract void writeConfig(int address, byte[] data, int offset, int length);
+		public abstract void writeData(int address, byte[] data, int offset, int length, ProgressReporter pr = null);
 
-		public abstract void readData(int address, byte[] data, int offset, int length);
+		public delegate void ProgressReporter(int percentage);
 
-		public abstract void readCode(int address, byte[] data, int offset, int length);
+		public abstract void writeConfig(int address, byte[] data, int offset, int length, ProgressReporter pr = null);
+
+		public abstract void readData(int address, byte[] data, int offset, int length, ProgressReporter pr = null);
+
+		public abstract void readCode(int address, byte[] data, int offset, int length, ProgressReporter pr = null);
 
 
 
