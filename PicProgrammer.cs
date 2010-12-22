@@ -25,8 +25,8 @@ namespace BusPiratePICProgrammer
 			hw = new RawWire(bp);
 			hw.EnterMode();
 
-			hw.ConfigProtocol(false, false, true);
-			hw.ConfigPins(true, true, false, true);
+			hw.ConfigProtocol(true, false, true);
+			hw.ConfigPins(true, false, false, true);
 			hw.SpeedMode = RawWire.Speed.s400khz;
 			this.lvp = LVP;
 		}
@@ -40,14 +40,15 @@ namespace BusPiratePICProgrammer
 				hw.CS = false;
 				BusPirate.Wait(50);
 				
-				if (lvp) 
+				if (lvp) {
 					hw.CS = value;
+				}
 				else
 					hw.AUX = value;
 
 				BusPirate.Wait(50);
 				hw.Power = true;
-				hw.CS = true;
+				//hw.CS = true;
 
 				program = value;
 			}

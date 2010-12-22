@@ -100,10 +100,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PIC18ProgrammerHelper.cs" />
     <Compile Include="DsPICProgrammer.cs" />
     <Compile Include="HexParser.cs" />
     <Compile Include="PIC16Programmer.cs" />
     <Compile Include="PIC16ProgrammerHelper.cs" />
+    <Compile Include="PIC18Programmer.cs" />
     <Compile Include="PicDesc.cs" />
     <Compile Include="PicProgrammer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
