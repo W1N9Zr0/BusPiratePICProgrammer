@@ -25,8 +25,8 @@ namespace BusPiratePICProgrammer
 			hw = new RawWire(bp);
 			hw.EnterMode();
 
-			hw.ConfigProtocol(true, false, true);
-			hw.ConfigPins(true, false, false, true);
+			hw.ConfigProtocol(activeOutput: true, threeWire: false, LSBfirst: true);
+			hw.ConfigPins(power: true, pullups: false, aux: false, cs: true);
 			hw.SpeedMode = RawWire.Speed.s400khz;
 			this.lvp = LVP;
 		}
@@ -36,18 +36,46 @@ namespace BusPiratePICProgrammer
 		{
 			set
 			{
-				hw.Power = false;
-				hw.CS = false;
+				//hw.Power = false;
+				//hw.CS = false;
 				BusPirate.Wait(50);
-				
-				if (lvp) {
-					hw.CS = value;
+
+				hw.OutputPin = false;
+				hw.ClockPin = false;
+
+				if (lvp)
+				{
+					if (value)
+					{
+						hw.CS = value;
+						BusPirate.Wait(10);
+						hw.AUX = value;
+					}
+					else
+					{
+						hw.AUX = value;
+						BusPirate.Wait(10);
+						hw.CS = value;
+					}
 				}
-				else
+				else {
+					if (value)
+					{
+						hw.Power = true;
+						BusPirate.Wait(10);
+					}
 					hw.AUX = value;
+					if (!value)
+					{
+						BusPirate.Wait(10);
+						hw.Power = false;
+						BusPirate.Wait(10);
+						hw.Power = true;
+					}
+				}
 
 				BusPirate.Wait(50);
-				hw.Power = true;
+				//hw.Power = true;
 				//hw.CS = true;
 
 				program = value;

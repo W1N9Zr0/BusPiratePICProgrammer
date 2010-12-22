@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BusPirateLibCS;
 
 namespace BusPiratePICProgrammer
 {
@@ -23,14 +24,23 @@ namespace BusPiratePICProgrammer
 			return TableReadInc();
 		}
 
+
+		const byte MOVLW = 0x0e;
+		const byte MOVWF = 0x6e;
+
+		const byte TBLPTRU = 0xf8;
+		const byte TBLPTRH = 0xf7;
+		const byte TBLPTRL = 0xf6;
+
 		private void loadTBLPTR(int address)
 		{
-			CoreInstruction(0x0e, (byte)((address >> 16) & 0xff));	// MOVLW Addr[21:16]
-			CoreInstruction(0x6e, 0xf8);							// MOVWF TBLRPTRU
-			CoreInstruction(0x0e, (byte)((address >>  8) & 0xff));	// MOVLW Addr[15:8]
-			CoreInstruction(0x6e, 0xf7);							// MOVWF TBLRPTRH
-			CoreInstruction(0x0e, (byte)((address      ) & 0xff));	// MOVLW Addr[7:0]
-			CoreInstruction(0x6e, 0xf6);							// MOVWF TBLRPTR
+
+			CoreInstruction(MOVLW, (byte)((address >> 16) & 0xff));	// MOVLW Addr[21:16]
+			CoreInstruction(MOVWF, TBLPTRU);							// MOVWF TBLRPTRU
+			CoreInstruction(MOVLW, (byte)((address >> 8) & 0xff));	// MOVLW Addr[15:8]
+			CoreInstruction(MOVWF, TBLPTRH);							// MOVWF TBLRPTRH
+			CoreInstruction(MOVLW, (byte)((address) & 0xff));	// MOVLW Addr[7:0]
+			CoreInstruction(MOVWF, TBLPTRL);							// MOVWF TBLRPTR
 		}
 
 
@@ -51,8 +61,12 @@ namespace BusPiratePICProgrammer
 		private byte TableReadInc()
 		{
 			hw.WriteBits(0x9, 4);
+			BusPirate.Wait(1);
 			hw.WriteByte(0);
-			return hw.ReadByte();
+			BusPirate.Wait(1);
+			var read = hw.ReadByte();
+			BusPirate.Wait(1);
+			return read;
 		}
 
 		private byte TableReadDec()
@@ -66,6 +80,38 @@ namespace BusPiratePICProgrammer
 			icspInstruction(0, data1, data2);
 		}
 
+		private void TableWriteInc2(byte data1, byte data2)
+		{
+			icspInstruction(0xd, data1, data2);
+		}
+
+		private void TableWriteProg(byte data1, byte data2) {
+			icspInstruction(0xf, data1, data2);
+
+			hw.WriteBits(0, 3);
+			hw.OutputPin = false;
+			hw.ClockPin = true;
+			BusPirate.Wait(10);
+			hw.ClockPin = false;
+			hw.WriteBulk(new byte[] { 0, 0 });
+
+		}
+
+
+		private void BulkErase()
+		{
+
+
+			CoreInstruction(0, 0);
+
+			hw.WriteBits(0, 4);
+			//hw.OutputPin = false;
+			hw.ClockPin = false;
+			BusPirate.Wait(10);
+			//hw.ClockPin = false;
+			
+			hw.WriteBulk(new byte[] { 0, 0 });
+		}
 
 	}
 }

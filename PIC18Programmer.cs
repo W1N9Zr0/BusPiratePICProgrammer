@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO.Ports;
 using System.Diagnostics;
+using BusPirateLibCS;
 
 namespace BusPiratePICProgrammer
 {
@@ -16,10 +17,48 @@ namespace BusPiratePICProgrammer
 
 		}
 
+		private int WriteBlockSize { 
+			get {
+				return 64;
+			}
+		}
+
+		private int EraseBlockSize
+		{
+			get
+			{
+				return 64;
+			}
+		}
+
 		public override void bulkErase(bool eraseEEPROM = true)
 		{
-			throw new NotImplementedException();
+
+			Program = true;
+
+			if (eraseEEPROM == false)
+				throw new NotImplementedException("erase without eeprom erase not implemented");
+
+			setAddress(0x3c0005);
+
+			byte ercode1 = 0x00;// 0x3f;
+			byte ercode2 = 0x82; // 0x8f;
+			icspInstruction(0xc, ercode1, ercode1);
+
+			setAddress(0x3c0004);
+
+			icspInstruction(0xc, ercode2, ercode2);
+
+			BulkErase();
+
+
+			BusPirate.Wait(10);
+
+			Program = false;
+
 		}
+
+
 
 		public override void eraseData()
 		{
@@ -28,7 +67,43 @@ namespace BusPiratePICProgrammer
 
 		public override void writeCode(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
 		{
-			throw new NotImplementedException();
+
+			Program = true;
+
+			CoreInstruction(0x8e, 0xa6); // BSF EECON1, EEPGD
+			CoreInstruction(0x9c, 0xa6); // BCF EECON1, CFGS
+			CoreInstruction(0x84, 0xa6); // BSF EECON1, WREN
+			
+			
+
+			var leftOver = length % WriteBlockSize;
+			var paddedLength = length + (WriteBlockSize - leftOver) % WriteBlockSize;
+			byte[] paddedData = new byte[length + (length %2)];
+			Array.ConstrainedCopy(data, offset, paddedData, 0, length);
+			
+			for (int i = length; i < paddedData.Length; i++ ) {
+				paddedData[i] = 0xff;
+			}
+
+			for (int block = 0; block < paddedLength / WriteBlockSize; block++)
+			{
+				setAddress(address + block * WriteBlockSize);
+
+				for (int i = 0; i < WriteBlockSize && (block * WriteBlockSize + i < length); i += 2)
+				{
+					var arrayIndex = block * WriteBlockSize + i;
+
+					if (i == WriteBlockSize - 2 || arrayIndex + 2 == paddedData.Length)
+					{
+						//TableWriteProg(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+						TableWriteProg(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+					} else {
+						//TableWriteInc2(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+						TableWriteInc2(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+					}
+				}
+			}
+			Program = false;
 		}
 
 		public override void writeData(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
@@ -38,12 +113,46 @@ namespace BusPiratePICProgrammer
 
 		public override void writeConfig(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
 		{
-			throw new NotImplementedException();
+			Program = true;
+
+			CoreInstruction(0x8e, 0xa6); // BSF EECON1, EEPGD
+			CoreInstruction(0x8c, 0xa6); // BSF EECON1, CFGS
+			CoreInstruction(0x84, 0xa6); // BSF EECON1, WREN
+
+			for (int i = 0; i < length; i+=2 ) {
+				setAddress(address + i);
+
+				byte data1 = data[offset + i];
+				byte data2 = 0;
+				if (i+1 < length)  {
+					data2 = data[offset + i + 1];
+				}
+
+				TableWriteProg(0, data1);
+
+				setAddress(address + i + 1);
+
+				TableWriteProg(data2, 0);
+
+			}
+
+			
+			Program = false;
+
+
 		}
 
 		public override void readData(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
 		{
-			throw new NotImplementedException();
+			Program = true;
+
+			CoreInstruction(0x0E, 0);
+			CoreInstruction(0x6E, 0x92);
+
+			CoreInstruction(0x0E, (byte)address);
+			CoreInstruction(0x6E,0x80);
+			BusPirate.Wait(1000);
+			Program = false;
 		}
 
 		public override void readCode(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
