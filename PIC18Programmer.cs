@@ -87,7 +87,7 @@ namespace BusPiratePICProgrammer
 
 			for (int i = 0; i < initialOffset; i++)
 			{
-				shiftedData[i] = 0xcc;
+				shiftedData[i] = 0xff;
 			}
 
 			length = length + initialOffset;
@@ -100,24 +100,24 @@ namespace BusPiratePICProgrammer
 			Array.ConstrainedCopy(data, offset, paddedData, 0, length);
 			
 			for (int i = length; i < paddedData.Length; i++ ) {
-				paddedData[i] = 0xcc;
+				paddedData[i] = 0xff;
 			}
 
 			for (int block = 0; block < paddedLength / WriteBlockSize; block++)
 			{
 				setAddress(address + block * WriteBlockSize);
 
-				for (int i = 0; i < WriteBlockSize && (block * WriteBlockSize + i < length); i += 2)
+				for (int i = 0; i < WriteBlockSize && (block * WriteBlockSize + i < paddedData.Length); i += 2)
 				{
 					var arrayIndex = block * WriteBlockSize + i;
 
 					if (i == WriteBlockSize - 2 || arrayIndex + 2 == paddedData.Length)
 					{
 						//TableWriteProg(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
-						TableWriteProg(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+						TableWriteProg(paddedData[arrayIndex + 1], paddedData[arrayIndex]);
 					} else {
 						//TableWriteInc2(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
-						TableWriteInc2(paddedData[arrayIndex], paddedData[arrayIndex + 1]);
+						TableWriteInc2(paddedData[arrayIndex + 1], paddedData[arrayIndex]);
 					}
 				}
 			}
@@ -169,7 +169,7 @@ namespace BusPiratePICProgrammer
 
 			CoreInstruction(0x0E, (byte)address);
 			CoreInstruction(0x6E,0x80);
-			BusPirate.Wait(1000);
+			BusPirate.Wait(1);
 			Program = false;
 		}
 
