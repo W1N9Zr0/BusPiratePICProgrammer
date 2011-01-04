@@ -44,8 +44,10 @@ namespace BusPiratePICProgrammer
 		}
 
 
-		private void icspInstruction(int code, byte data1, byte data2)
+		private void icspInstruction(byte code, byte data1, byte data2)
 		{
+			//hw.picWrite(code, data1, data2, 0);
+
 			hw.WriteBits(code, 4);
 			hw.WriteBulk(new byte[] { data2, data1 });
 		}
@@ -61,9 +63,9 @@ namespace BusPiratePICProgrammer
 		private byte TableReadInc()
 		{
 			hw.WriteBits(0x9, 4);
-			BusPirate.Wait(1);
+			BusPirate.Wait(10);
 			hw.WriteByte(0);
-			BusPirate.Wait(1);
+			BusPirate.Wait(10);
 			var read = hw.ReadByte();
 			BusPirate.Wait(1);
 			return read;
@@ -91,8 +93,11 @@ namespace BusPiratePICProgrammer
 			hw.WriteBits(0, 3);
 			hw.OutputPin = false;
 			hw.ClockPin = true;
-			BusPirate.Wait(10);
+			BusPirate.Wait(20);
 			hw.ClockPin = false;
+
+			BusPirate.Wait(20);
+			
 			hw.WriteBulk(new byte[] { 0, 0 });
 
 		}
@@ -103,14 +108,16 @@ namespace BusPiratePICProgrammer
 
 
 			CoreInstruction(0, 0);
+			CoreInstruction(0, 0);
+			BusPirate.Wait(20);
 
-			hw.WriteBits(0, 4);
+			//hw.WriteBits(0, 4);
 			//hw.OutputPin = false;
-			hw.ClockPin = false;
-			BusPirate.Wait(10);
 			//hw.ClockPin = false;
+			//BusPirate.Wait(20);
+			////hw.ClockPin = false;
 			
-			hw.WriteBulk(new byte[] { 0, 0 });
+			//hw.WriteBulk(new byte[] { 0, 0 });
 		}
 
 	}

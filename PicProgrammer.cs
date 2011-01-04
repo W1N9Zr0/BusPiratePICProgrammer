@@ -25,8 +25,11 @@ namespace BusPiratePICProgrammer
 			hw = new RawWire(bp);
 			hw.EnterMode();
 
-			hw.ConfigProtocol(activeOutput: true, threeWire: false, LSBfirst: true);
-			hw.ConfigPins(power: true, pullups: false, aux: false, cs: true);
+			var ActiveOut = true;
+
+
+			hw.ConfigProtocol(activeOutput: ActiveOut, threeWire: false, LSBfirst: true);
+			hw.ConfigPins(power: true, pullups: !ActiveOut, aux: false, cs: true);
 			hw.SpeedMode = RawWire.Speed.s400khz;
 			this.lvp = LVP;
 		}

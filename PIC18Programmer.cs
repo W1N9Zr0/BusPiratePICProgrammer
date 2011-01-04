@@ -14,8 +14,11 @@ namespace BusPiratePICProgrammer
 		public PIC18Programmer(SerialPort sp, bool LVP = true)
 			: base(sp, LVP)
 		{
+			hw.PicMode = BusPirateLibCS.Modes.RawWire.PICMode.PIC416;
 
 		}
+
+		
 
 		private int WriteBlockSize { 
 			get {
@@ -72,17 +75,32 @@ namespace BusPiratePICProgrammer
 
 			CoreInstruction(0x8e, 0xa6); // BSF EECON1, EEPGD
 			CoreInstruction(0x9c, 0xa6); // BCF EECON1, CFGS
-			CoreInstruction(0x84, 0xa6); // BSF EECON1, WREN
-			
-			
+			//CoreInstruction(0x84, 0xa6); // BSF EECON1, WREN
+
+
+			var initialOffset = address % WriteBlockSize;
+			var blockAddress = address - initialOffset;
+
+			var shiftedData = new byte[length + initialOffset];
+
+			Array.ConstrainedCopy(data, offset, shiftedData, initialOffset, length);
+
+			for (int i = 0; i < initialOffset; i++)
+			{
+				shiftedData[i] = 0xcc;
+			}
+
+			length = length + initialOffset;
+			address = (address  - initialOffset);
+			data = shiftedData;
 
 			var leftOver = length % WriteBlockSize;
 			var paddedLength = length + (WriteBlockSize - leftOver) % WriteBlockSize;
-			byte[] paddedData = new byte[length + (length %2)];
+			byte[] paddedData = new byte[paddedLength];
 			Array.ConstrainedCopy(data, offset, paddedData, 0, length);
 			
 			for (int i = length; i < paddedData.Length; i++ ) {
-				paddedData[i] = 0xff;
+				paddedData[i] = 0xcc;
 			}
 
 			for (int block = 0; block < paddedLength / WriteBlockSize; block++)
@@ -162,6 +180,7 @@ namespace BusPiratePICProgrammer
 			setAddress(address);
 			for (int i = 0; i < length; i++)
 			{
+				setAddress(address + i);
 				data[offset + i] = readCodeByteInc();
 				if (data[offset + i] != 0xff)
 				{
@@ -174,6 +193,11 @@ namespace BusPiratePICProgrammer
 			}
 
 			Program = false;
+		}
+
+		private byte readCodeByte()
+		{
+			return TableRead();
 		}
 	}
 }
