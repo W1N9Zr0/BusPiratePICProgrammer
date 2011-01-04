@@ -41,8 +41,8 @@ namespace BusPiratePICProgrammer
 
 			setAddress(0x3c0005);
 
-			byte ercode1 = 0x00;// 0x3f;
-			byte ercode2 = 0x82; // 0x8f;
+			byte ercode1 = 0x3f;// 0x3f;
+			byte ercode2 = 0x8f; // 0x8f;
 			icspInstruction(0xc, ercode1, ercode1);
 
 			setAddress(0x3c0004);
