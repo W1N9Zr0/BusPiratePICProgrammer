@@ -105,6 +105,8 @@ namespace BusPiratePICProgrammer
 
 			for (int block = 0; block < paddedLength / WriteBlockSize; block++)
 			{
+				if (pr != null)
+					pr(block * 100 / (paddedLength / WriteBlockSize));
 				setAddress(address + block * WriteBlockSize);
 
 				for (int i = 0; i < WriteBlockSize && (block * WriteBlockSize + i < paddedData.Length); i += 2)
@@ -121,6 +123,8 @@ namespace BusPiratePICProgrammer
 					}
 				}
 			}
+			if (pr != null)
+				pr(100);
 			Program = false;
 		}
 
