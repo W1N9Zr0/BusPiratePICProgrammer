@@ -133,10 +133,20 @@ namespace BusPiratePICProgrammer
 			throw new NotImplementedException();
 		}
 
-		public override void writeConfig(int address, byte[] data, int offset, int length, PicProgrammer.ProgressReporter pr = null)
+		public override void writeConfig(int address, byte[] dataIn, int offset, int length, PicProgrammer.ProgressReporter pr = null)
 		{
+			byte[] data = dataIn;
+			if (address % 2 == 1)
+			{
+				address -= 1;
+				length += 1;
+				data = new byte[length];
+				Array.Copy(dataIn, 0, data, 1, length - 1);
+				data[0] = 0xff;
+			}
+			
 			Program = true;
-
+			
 			CoreInstruction(0x8e, 0xa6); // BSF EECON1, EEPGD
 			CoreInstruction(0x8c, 0xa6); // BSF EECON1, CFGS
 			CoreInstruction(0x84, 0xa6); // BSF EECON1, WREN
